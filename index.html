@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Clicker Game</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #111;
+      color: white;
+    }
+
+    button {
+      padding: 15px 25px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+    }
+
+    #clickBtn {
+      background: #00ff99;
+    }
+
+    .upgrade {
+      background: #333;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💰 Clicker Game</h1>
+  <h2>Pontos: <span id="points">0</span></h2>
+  <h3>Por clique: <span id="perClick">1</span></h3>
+
+  <button id="clickBtn">CLICAR</button>
+
+  <h2>Upgrades</h2>
+
+  <button class="upgrade" onclick="buyUpgrade(1)">
+    +1 por clique (Custo: <span id="cost1">10</span>)
+  </button>
+
+  <button class="upgrade" onclick="buyUpgrade(2)">
+    +5 por clique (Custo: <span id="cost2">50</span>)
+  </button>
+
+  <script>
+    let points = 0;
+    let perClick = 1;
+
+    let upgrades = {
+      1: { cost: 10, increase: 1 },
+      2: { cost: 50, increase: 5 }
+    };
+
+    const pointsText = document.getElementById("points");
+    const perClickText = document.getElementById("perClick");
+
+    document.getElementById("clickBtn").onclick = () => {
+      points += perClick;
+      updateUI();
+    };
+
+    function buyUpgrade(id) {
+      let upgrade = upgrades[id];
+
+      if (points >= upgrade.cost) {
+        points -= upgrade.cost;
+        perClick += upgrade.increase;
+
+        upgrade.cost = Math.floor(upgrade.cost * 1.5);
+
+        document.getElementById("cost" + id).innerText = upgrade.cost;
+
+        updateUI();
+      } else {
+        alert("Pontos insuficientes!");
+      }
+    }
+
+    function updateUI() {
+      pointsText.innerText = points;
+      perClickText.innerText = perClick;
+    }
+  </script>
+
+</body>
+</html>
