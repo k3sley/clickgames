@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Clicker Game</title>
+
   <style>
     body {
       font-family: Arial;
@@ -18,6 +19,7 @@
       cursor: pointer;
       border: none;
       border-radius: 10px;
+      transition: 0.2s;
     }
 
     #clickBtn {
@@ -33,8 +35,10 @@
 <body>
 
   <h1>💰 Clicker Game</h1>
+
   <h2>Pontos: <span id="points">0</span></h2>
   <h3>Por clique: <span id="perClick">1</span></h3>
+  <h3>Auto: <span id="auto">0</span>/s</h3>
 
   <button id="clickBtn">CLICAR</button>
 
@@ -48,45 +52,109 @@
     +5 por clique (Custo: <span id="cost2">50</span>)
   </button>
 
-  <script>
-    let points = 0;
-    let perClick = 1;
+  <button class="upgrade" onclick="buyAuto()">
+    Auto click (+1/s) (Custo: <span id="autoCost">100</span>)
+  </button>
 
-    let upgrades = {
-      1: { cost: 10, increase: 1 },
-      2: { cost: 50, increase: 5 }
-    };
+<script>
+  let points = 0;
+  let perClick = 1;
+  let autoClick = 0;
 
-    const pointsText = document.getElementById("points");
-    const perClickText = document.getElementById("perClick");
+  let upgrades = {
+    1: { cost: 10, increase: 1 },
+    2: { cost: 50, increase: 5 }
+  };
 
-    document.getElementById("clickBtn").onclick = () => {
-      points += perClick;
+  let autoCost = 100;
+
+  const pointsText = document.getElementById("points");
+  const perClickText = document.getElementById("perClick");
+  const autoText = document.getElementById("auto");
+
+  // FORMATAR NÚMEROS
+  function formatNumber(num) {
+    if (num >= 1000000) return (num/1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num/1000).toFixed(1) + "K";
+    return num;
+  }
+
+  // CARREGAR SAVE
+  window.onload = () => {
+    points = parseInt(localStorage.getItem("points")) || 0;
+    perClick = parseInt(localStorage.getItem("perClick")) || 1;
+    autoClick = parseInt(localStorage.getItem("autoClick")) || 0;
+    autoCost = parseInt(localStorage.getItem("autoCost")) || 100;
+
+    updateUI();
+  };
+
+  // SALVAR AUTOMÁTICO
+  setInterval(() => {
+    localStorage.setItem("points", points);
+    localStorage.setItem("perClick", perClick);
+    localStorage.setItem("autoClick", autoClick);
+    localStorage.setItem("autoCost", autoCost);
+  }, 1000);
+
+  // BOTÃO DE CLIQUE
+  document.getElementById("clickBtn").onclick = () => {
+    points += perClick;
+
+    let btn = document.getElementById("clickBtn");
+    btn.style.transform = "scale(0.9)";
+    setTimeout(() => btn.style.transform = "scale(1)", 100);
+
+    updateUI();
+  };
+
+  // AUTO CLICK
+  setInterval(() => {
+    points += autoClick;
+    updateUI();
+  }, 1000);
+
+  // COMPRAR UPGRADE
+  function buyUpgrade(id) {
+    let upgrade = upgrades[id];
+
+    if (points >= upgrade.cost) {
+      points -= upgrade.cost;
+      perClick += upgrade.increase;
+
+      upgrade.cost = Math.floor(upgrade.cost * 1.5);
+
+      document.getElementById("cost" + id).innerText = upgrade.cost;
+
       updateUI();
-    };
-
-    function buyUpgrade(id) {
-      let upgrade = upgrades[id];
-
-      if (points >= upgrade.cost) {
-        points -= upgrade.cost;
-        perClick += upgrade.increase;
-
-        upgrade.cost = Math.floor(upgrade.cost * 1.5);
-
-        document.getElementById("cost" + id).innerText = upgrade.cost;
-
-        updateUI();
-      } else {
-        alert("Pontos insuficientes!");
-      }
+    } else {
+      alert("Pontos insuficientes!");
     }
+  }
 
-    function updateUI() {
-      pointsText.innerText = points;
-      perClickText.innerText = perClick;
+  // COMPRAR AUTO CLICK
+  function buyAuto() {
+    if (points >= autoCost) {
+      points -= autoCost;
+      autoClick += 1;
+
+      autoCost = Math.floor(autoCost * 1.6);
+      document.getElementById("autoCost").innerText = autoCost;
+
+      updateUI();
+    } else {
+      alert("Pontos insuficientes!");
     }
-  </script>
+  }
+
+  // ATUALIZAR TELA
+  function updateUI() {
+    pointsText.innerText = formatNumber(points);
+    perClickText.innerText = perClick;
+    autoText.innerText = autoClick;
+  }
+
+</script>
 
 </body>
 </html>
