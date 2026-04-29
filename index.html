@@ -175,9 +175,9 @@ document.getElementById("clickBtn").onclick = () => {
 
 // 🤖 AUTO (NERFADO)
 setInterval(() => {
-  points += autoClick * (multiplier * 0.5);
+  points += autoClick * (multiplier * 0.2);
   updateUI();
-}, 1000);
+}, 100);
 
 // UPGRADE
 function buyUpgrade(id) {
@@ -196,7 +196,7 @@ function buyAuto() {
   if (points >= autoCost) {
     points -= autoCost;
     autoClick++;
-    autoCost = Math.floor(autoCost * 1.3); // mais suave
+    autoCost = Math.floor(autoCost * 1.0); // mais suave
     document.getElementById("autoCost").innerText = autoCost;
     updateUI();
   }
