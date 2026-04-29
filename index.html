@@ -1,89 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Clicker Game</title>
-
-<style>
-body {
-  font-family: Arial;
-  text-align: center;
-  background: #111;
-  color: white;
-}
-
-button {
-  padding: 15px 25px;
-  margin: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 10px;
-  transition: 0.2s;
-}
-
-#clickBtn { background: #00ff99; }
-.upgrade { background: #333; color: white; }
-
-/* SKINS */
-.red { background: #ff4d4d !important; }
-.blue { background: #4da6ff !important; }
-.gold { background: gold !important; color: black; }
-
-/* PARTICULAS */
-.particle {
-  position: absolute;
-  font-size: 14px;
-  pointer-events: none;
-  animation: floatUp 1s ease-out forwards;
-}
-
-@keyframes floatUp {
-  0% { opacity: 1; transform: translateY(0px); }
-  100% { opacity: 0; transform: translateY(-50px); }
-}
-</style>
-</head>
-
-<body>
-
-<h1> Clicker Game</h1>
-
-<h2>Pontos: <span id="points">0</span></h2>
-<h3>Por clique: <span id="perClick">1</span></h3>
-<h3>Auto: <span id="auto">0</span>/s</h3>
-
-<h3>Rebirths: <span id="rebirths">0</span></h3>
-<h3>Multiplicador: x<span id="mult">1</span></h3>
-
-<button id="clickBtn">CLICAR</button>
-
-<h2>Upgrades</h2>
-
-<button class="upgrade" onclick="buyUpgrade(1)">
-+1 por clique (Custo: <span id="cost1">10</span>)
-</button>
-
-<button class="upgrade" onclick="buyUpgrade(2)">
-+5 por clique (Custo: <span id="cost2">50</span>)
-</button>
-
-<button class="upgrade" onclick="buyAuto()">
-Auto click (+1/s) (Custo: <span id="autoCost">10</span>)
-</button>
-
-<h2>Cosméticos</h2>
-
-<button class="upgrade" onclick="buySkin('red')">Vermelho (200)</button>
-<button class="upgrade" onclick="buySkin('blue')">Azul (200)</button>
-<button class="upgrade" onclick="buySkin('gold')">Dourado (500)</button>
-
-<h2>Rebirth</h2>
-
-<button class="upgrade" onclick="rebirth()">
-Rebirth (Custo: <span id="rebirthCost">10000</span>)
-</button>
-
 <script>
 let points = 0;
 let perClick = 1;
@@ -125,6 +39,15 @@ window.onload = () => {
   multiplier = parseFloat(localStorage.getItem("multiplier")) || 1;
   rebirthCost = parseInt(localStorage.getItem("rebirthCost")) || 10000;
 
+  // 🔥 NOVO: carregar custos upgrades
+  upgrades[1].cost = parseInt(localStorage.getItem("cost1")) || 10;
+  upgrades[2].cost = parseInt(localStorage.getItem("cost2")) || 50;
+
+  // atualizar na tela
+  document.getElementById("cost1").innerText = upgrades[1].cost;
+  document.getElementById("cost2").innerText = upgrades[2].cost;
+  document.getElementById("autoCost").innerText = autoCost;
+
   applySkin();
   updateUI();
 };
@@ -140,6 +63,11 @@ setInterval(() => {
   localStorage.setItem("rebirths", rebirths);
   localStorage.setItem("multiplier", multiplier);
   localStorage.setItem("rebirthCost", rebirthCost);
+
+  // 🔥 NOVO: salvar custos upgrades
+  localStorage.setItem("cost1", upgrades[1].cost);
+  localStorage.setItem("cost2", upgrades[2].cost);
+
 }, 1000);
 
 // CLICK
@@ -207,11 +135,14 @@ function rebirth() {
     rebirths++;
     multiplier += 0.5;
 
-    // reset
     points = 0;
     perClick = 1;
     autoClick = 0;
     autoCost = 100;
+
+    // 🔥 reset upgrades corretamente
+    upgrades[1].cost = 10;
+    upgrades[2].cost = 50;
 
     rebirthCost = Math.floor(rebirthCost * 2);
 
@@ -244,6 +175,3 @@ function updateUI(){
   document.getElementById("rebirthCost").innerText = formatNumber(rebirthCost);
 }
 </script>
-
-</body>
-</html>
