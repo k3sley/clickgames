@@ -47,7 +47,7 @@ button {
 
 <body>
 
-<h1>💰 Clicker Game</h1>
+<h1> Clicker Game</h1>
 
 <h2>Pontos: <span id="points">0</span></h2>
 <h3>Por clique: <span id="perClick">1</span></h3>
@@ -69,7 +69,7 @@ button {
 </button>
 
 <button class="upgrade" onclick="buyAuto()">
-Auto click (+1/s) (Custo: <span id="autoCost">100</span>)
+Auto click (+1/s) (Custo: <span id="autoCost">10</span>)
 </button>
 
 <h2>Cosméticos</h2>
@@ -160,7 +160,7 @@ document.getElementById("clickBtn").onclick = () => {
 setInterval(() => {
   points += autoClick * multiplier;
   updateUI();
-}, 1000);
+}, 100);
 
 // UPGRADE
 function buyUpgrade(id) {
