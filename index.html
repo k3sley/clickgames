@@ -7,95 +7,124 @@
 <style>
 body {
   font-family: Arial;
-  text-align: center;
-  background: #111;
+  margin: 0;
+  background: #0d0d0d;
   color: white;
 }
 
-button {
-  padding: 15px 25px;
-  margin: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 10px;
-  transition: 0.2s;
+/* MENU */
+#menu {
+  display: flex;
+  justify-content: center;
+  background: #1a1a1a;
+  padding: 10px;
 }
 
-#clickBtn { background: #00ff99; }
-.upgrade { background: #333; color: white; }
+.menuBtn {
+  margin: 0 10px;
+  padding: 10px 20px;
+  background: #333;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
-/* 🔵 REBIRTH */
+/* TELAS */
+.screen {
+  display: none;
+  text-align: center;
+  padding: 20px;
+}
+
+.active {
+  display: block;
+}
+
+/* BOTAO CENTRAL */
+#clickBtn {
+  background: #00ff99;
+  font-size: 24px;
+  padding: 30px;
+  border-radius: 50%;
+  margin-top: 20px;
+}
+
+/* LOJA */
+.upgrade {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  background: #333;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* REBIRTH */
 .rebirthBtn {
   background: #2196f3;
-  color: white;
 }
-
-/* SKINS */
-.red { background: #ff4d4d !important; }
-.blue { background: #4da6ff !important; }
-.gold { background: gold !important; color: black; }
 
 /* PARTICULAS */
 .particle {
   position: absolute;
-  font-size: 14px;
-  pointer-events: none;
-  animation: floatUp 1s ease-out forwards;
+  animation: floatUp 1s forwards;
 }
 
 @keyframes floatUp {
-  0% { opacity: 1; transform: translateY(0px); }
-  100% { opacity: 0; transform: translateY(-50px); }
+  0% {opacity:1; transform:translateY(0);}
+  100% {opacity:0; transform:translateY(-50px);}
 }
 </style>
 </head>
 
 <body>
 
-<h1>💰 Clicker Game</h1>
+<div id="menu">
+  <div class="menuBtn" onclick="showScreen('game')">🎮 Jogo</div>
+  <div class="menuBtn" onclick="showScreen('shop')">🛒 Loja</div>
+  <div class="menuBtn" onclick="showScreen('rebirth')">🔁 Rebirth</div>
+</div>
 
-<h2>Pontos: <span id="points">0</span></h2>
-<h3>Por clique: <span id="perClick">1</span></h3>
-<h3>Auto: <span id="auto">0</span>/s</h3>
+<!-- TELA JOGO -->
+<div id="game" class="screen active">
+  <h1>Pontos: <span id="points">0</span></h1>
+  <button id="clickBtn">CLIQUE</button>
+  <h3>Por clique: <span id="perClick">1</span></h3>
+  <h3>Auto: <span id="auto">0</span>/s</h3>
+</div>
 
-<h3>Rebirths: <span id="rebirths">0</span></h3>
-<h3>Multiplicador: x<span id="mult">1</span></h3>
+<!-- LOJA -->
+<div id="shop" class="screen">
+  <h2>Upgrades</h2>
 
-<button id="clickBtn">CLICAR</button>
+  <button class="upgrade" onclick="buyUpgrade(1)">
+    +1 por clique (Custo: <span id="cost1">10</span>)
+  </button>
 
-<h2>Upgrades</h2>
+  <button class="upgrade" onclick="buyUpgrade(2)">
+    +5 por clique (Custo: <span id="cost2">50</span>)
+  </button>
 
-<button class="upgrade" onclick="buyUpgrade(1)">
-+1 por clique (Custo: <span id="cost1">10</span>)
-</button>
+  <button class="upgrade" onclick="buyAuto()">
+    Auto click (+1/s) (Custo: <span id="autoCost">75</span>)
+  </button>
+</div>
 
-<button class="upgrade" onclick="buyUpgrade(2)">
-+5 por clique (Custo: <span id="cost2">50</span>)
-</button>
+<!-- REBIRTH -->
+<div id="rebirth" class="screen">
+  <h2>Rebirth</h2>
+  <p>Rebirths: <span id="rebirths">0</span></p>
+  <p>Multiplicador: x<span id="mult">1</span></p>
 
-<button class="upgrade" onclick="buyAuto()">
-Auto click (+1/s) (Custo: <span id="autoCost">100</span>)
-</button>
-
-<h2>Cosméticos</h2>
-
-<button class="upgrade" onclick="buySkin('red')">Vermelho (200)</button>
-<button class="upgrade" onclick="buySkin('blue')">Azul (200)</button>
-<button class="upgrade" onclick="buySkin('gold')">Dourado (500)</button>
-
-<h2>Rebirth</h2>
-
-<button class="upgrade rebirthBtn" onclick="rebirth()">
-Rebirth (Custo: <span id="rebirthCost">10000</span>)
-</button>
+  <button class="upgrade rebirthBtn" onclick="rebirth()">
+    Rebirth (Custo: <span id="rebirthCost">10000</span>)
+  </button>
+</div>
 
 <script>
 let points = 0;
 let perClick = 1;
 let autoClick = 0;
-let autoCost = 100;
-let currentSkin = "";
+let autoCost = 75;
 
 let rebirths = 0;
 let multiplier = 1;
@@ -106,163 +135,123 @@ let upgrades = {
   2: { cost: 50, increase: 5 }
 };
 
-const pointsText = document.getElementById("points");
-const perClickText = document.getElementById("perClick");
-const autoText = document.getElementById("auto");
-const rebirthText = document.getElementById("rebirths");
-const multText = document.getElementById("mult");
-
-// FORMATAR
-function formatNumber(num) {
-  if (num >= 1000000) return (num/1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num/1000).toFixed(1) + "K";
-  return num;
+// trocar telas
+function showScreen(name){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(name).classList.add("active");
 }
 
-// LOAD
-window.onload = () => {
-  points = parseInt(localStorage.getItem("points")) || 0;
-  perClick = parseInt(localStorage.getItem("perClick")) || 1;
-  autoClick = parseInt(localStorage.getItem("autoClick")) || 0;
-  autoCost = parseInt(localStorage.getItem("autoCost")) || 100;
-  currentSkin = localStorage.getItem("skin") || "";
-
-  rebirths = parseInt(localStorage.getItem("rebirths")) || 0;
-  multiplier = parseFloat(localStorage.getItem("multiplier")) || 1;
-  rebirthCost = parseInt(localStorage.getItem("rebirthCost")) || 10000;
-
-  upgrades[1].cost = parseInt(localStorage.getItem("cost1")) || 10;
-  upgrades[2].cost = parseInt(localStorage.getItem("cost2")) || 50;
-
-  document.getElementById("cost1").innerText = upgrades[1].cost;
-  document.getElementById("cost2").innerText = upgrades[2].cost;
-  document.getElementById("autoCost").innerText = autoCost;
-
-  applySkin();
-  updateUI();
-};
-
-// SAVE
-setInterval(() => {
+// salvar
+setInterval(()=>{
   localStorage.setItem("points", points);
   localStorage.setItem("perClick", perClick);
   localStorage.setItem("autoClick", autoClick);
   localStorage.setItem("autoCost", autoCost);
-  localStorage.setItem("skin", currentSkin);
-
   localStorage.setItem("rebirths", rebirths);
   localStorage.setItem("multiplier", multiplier);
   localStorage.setItem("rebirthCost", rebirthCost);
 
   localStorage.setItem("cost1", upgrades[1].cost);
   localStorage.setItem("cost2", upgrades[2].cost);
+},1000);
 
-}, 1000);
+// carregar
+window.onload = ()=>{
+  points = parseInt(localStorage.getItem("points"))||0;
+  perClick = parseInt(localStorage.getItem("perClick"))||1;
+  autoClick = parseInt(localStorage.getItem("autoClick"))||0;
+  autoCost = parseInt(localStorage.getItem("autoCost"))||75;
 
-// CLICK
-document.getElementById("clickBtn").onclick = () => {
-  points += perClick * multiplier;
+  rebirths = parseInt(localStorage.getItem("rebirths"))||0;
+  multiplier = parseFloat(localStorage.getItem("multiplier"))||1;
+  rebirthCost = parseInt(localStorage.getItem("rebirthCost"))||10000;
 
-  let btn = document.getElementById("clickBtn");
-  btn.style.transform = "scale(0.9)";
-  setTimeout(() => btn.style.transform = "scale(1)", 100);
-
-  let rect = btn.getBoundingClientRect();
-  createParticle(rect.left + rect.width/2, rect.top);
+  upgrades[1].cost = parseInt(localStorage.getItem("cost1"))||10;
+  upgrades[2].cost = parseInt(localStorage.getItem("cost2"))||50;
 
   updateUI();
 };
 
-// 🤖 AUTO (NERFADO)
-setInterval(() => {
+// clique
+document.getElementById("clickBtn").onclick = (e)=>{
+  points += perClick * multiplier;
+
+  let rect = e.target.getBoundingClientRect();
+  createParticle(rect.left+50, rect.top);
+
+  updateUI();
+};
+
+// auto (nerfado)
+setInterval(()=>{
   points += autoClick * (multiplier * 0.2);
   updateUI();
-}, 100);
+},1000);
 
-// UPGRADE
-function buyUpgrade(id) {
-  let u = upgrades[id];
-  if (points >= u.cost) {
-    points -= u.cost;
-    perClick += u.increase;
-    u.cost = Math.floor(u.cost * 1.5);
-    document.getElementById("cost"+id).innerText = u.cost;
-    updateUI();
+// atualizações
+função comprarAtualizar(id){
+  dêixar u = atualizações[id];
+  se(pontos >= u.custo){
+    pontos -= u.custo;
+    por camarilha += u.aumentar;
+    u.custo = Matemática.chão(u.custo * 1,5);
   }
 }
 
-// 🤖 AUTO BALANCEADO
-function buyAuto() {
-  if (points >= autoCost) {
-    points -= autoCost;
-    autoClick++;
-    autoCost = Math.floor(autoCost * 1.0); // mais suave
-    document.getElementById("autoCost").innerText = autoCost;
-    updateUI();
+// automático
+diversidade comprarAuto(){
+  se(pontos >= custo automático){
+    pontos -= custo automático;
+    camarilha automático++;
+    custo automático = Matemática.chão(custo automático * 1.2);
   }
 }
 
-// SKIN
-function buySkin(skin) {
-  let cost = (skin === "gold") ? 500 : 200;
-  if (points >= cost) {
-    points -= cost;
-    currentSkin = skin;
-    applySkin();
+// renascimento
+diversidade renascimento(){
+  se(pontos >= custo de renascimento){
+    renascimentos++;
+    multiplicador += 0,3;
+
+    pontos = 0;
+    por camarilha = 1;
+    camarilha automático = 0;
+    custo automático = 75;
+
+    atualizações[1].custo = 10;
+    atualizações[2].custo = 50;
+
+    custo de renascimento *= 2;
   }
 }
 
-function applySkin() {
-  let btn = document.getElementById("clickBtn");
-  btn.classList.remove("red","blue","gold");
-  if (currentSkin) btn.classList.add(currentSkin);
+// particípios
+diversidade criarPartícula(x,y){
+  dêixar p = documento.criarElemento("div");
+  p.nome sim classe="partícula";
+  p.texto interno="+";
+
+  p.estilo.escarada=x+"px";
+  p.estilo.topo=y+"px";
+
+  documento.corpo.anexarCriança(p);
+  definirTempo limite(()=>p.removedor(),1000);
 }
 
-// 🔁 REBIRTH BALANCEADO
-function rebirth() {
-  if (points >= rebirthCost) {
-    rebirths++;
-    multiplier += 0.3;
+// Interface do usuário
+diversidade atualizaçãoUI(){
+  documento.obterElementoPorId("pontos").texto interno = Matemática.chão(pontos);
+  documento.obterElementoPorId("perClick").texto interno = por camarilha;
+  documento.obterElementoPorId("automático").texto interno = camarilha automático;
+  documento.obterElementoPorId("renascimentos").texto interno = renascimentos;
+  documento.obterElementoPorId("múltiplo").texto interno = multiplicador.paraFixo(1);
 
-    points = 0;
-    perClick = 1;
-    autoClick = 0;
-    autoCost = 100;
-
-    upgrades[1].cost = 10;
-    upgrades[2].cost = 50;
-
-    rebirthCost = Math.floor(rebirthCost * 2);
-
-    updateUI();
-  } else {
-    alert("Pontos insuficientes para rebirth!");
-  }
+  documento.obterElementoPorId("custo1").texto interno = atualizações[1].custo;
+  documento.obterElementoPorId("custo2").texto interno = atualizações[2].custo;
+  documento.obterElementoPorId("custo automático").texto interno = custo automático;
+  documento.obterElementoPorId("custo de renascimento").texto interno = custo de renascimento;
 }
+</roteiro>
 
-// PARTICULAS
-function createParticle(x,y){
-  let p = document.createElement("div");
-  p.className="particle";
-  p.innerText="+"+perClick;
-
-  p.style.left=x+"px";
-  p.style.top=y+"px";
-
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(),1000);
-}
-
-// UPDATE
-function updateUI(){
-  pointsText.innerText = formatNumber(points);
-  perClickText.innerText = perClick;
-  autoText.innerText = autoClick;
-  rebirthText.innerText = rebirths;
-  multText.innerText = multiplier.toFixed(1);
-  document.getElementById("rebirthCost").innerText = formatNumber(rebirthCost);
-}
-</script>
-
-</body>
-</html>
+</corpo>
+  </HTML>
