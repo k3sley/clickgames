@@ -6,17 +6,34 @@
 
 <style>
 body {
-  font-family: Arial;
   margin: 0;
-  background: #0d0d0d;
+  font-family: Arial;
   color: white;
+  overflow: hidden;
+}
+
+/* 🌊 FUNDO ANIMADO */
+body::before {
+  content: "";
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, #001f3f, #0074D9, #001f3f);
+  animation: water 10s linear infinite;
+  z-index: -1;
+}
+
+@keyframes water {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(-25%, -25%); }
+  100% { transform: translate(0,0); }
 }
 
 /* MENU */
 #menu {
   display: flex;
   justify-content: center;
-  background: #1a1a1a;
+  background: rgba(0,0,0,0.5);
   padding: 10px;
 }
 
@@ -24,7 +41,7 @@ body {
   margin: 0 10px;
   padding: 10px 20px;
   background: #333;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -39,13 +56,12 @@ body {
   display: block;
 }
 
-/* BOTAO CENTRAL */
+/* BOTAO */
 #clickBtn {
   background: #00ff99;
-  font-size: 24px;
-  padding: 30px;
-  border-radius: 50%;
-  margin-top: 20px;
+  padding: 25px;
+  font-size: 20px;
+  border-radius: 10px; /* quadrado */
 }
 
 /* LOJA */
@@ -54,24 +70,13 @@ body {
   margin: 10px auto;
   padding: 10px;
   background: #333;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 /* REBIRTH */
 .rebirthBtn {
   background: #2196f3;
-}
-
-/* PARTICULAS */
-.particle {
-  position: absolute;
-  animation: floatUp 1s forwards;
-}
-
-@keyframes floatUp {
-  0% {opacity:1; transform:translateY(0);}
-  100% {opacity:0; transform:translateY(-50px);}
 }
 </style>
 </head>
@@ -84,32 +89,29 @@ body {
   <div class="menuBtn" onclick="showScreen('rebirth')">🔁 Rebirth</div>
 </div>
 
-<!-- TELA JOGO -->
 <div id="game" class="screen active">
   <h1>Pontos: <span id="points">0</span></h1>
-  <button id="clickBtn">CLIQUE</button>
+  <button id="clickBtn">CLICAR</button>
   <h3>Por clique: <span id="perClick">1</span></h3>
   <h3>Auto: <span id="auto">0</span>/s</h3>
 </div>
 
-<!-- LOJA -->
 <div id="shop" class="screen">
-  <h2>Upgrades</h2>
+  <h2>Loja</h2>
 
   <button class="upgrade" onclick="buyUpgrade(1)">
-    +1 por clique (Custo: <span id="cost1">10</span>)
+    +1 clique (Custo: <span id="cost1">10</span>)
   </button>
 
   <button class="upgrade" onclick="buyUpgrade(2)">
-    +5 por clique (Custo: <span id="cost2">50</span>)
+    +5 clique (Custo: <span id="cost2">50</span>)
   </button>
 
   <button class="upgrade" onclick="buyAuto()">
-    Auto click (+1/s) (Custo: <span id="autoCost">75</span>)
+    Auto (+1/s) (Custo: <span id="autoCost">75</span>)
   </button>
 </div>
 
-<!-- REBIRTH -->
 <div id="rebirth" class="screen">
   <h2>Rebirth</h2>
   <p>Rebirths: <span id="rebirths">0</span></p>
@@ -121,6 +123,8 @@ body {
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 let points = 0;
 let perClick = 1;
 let autoClick = 0;
@@ -135,13 +139,38 @@ let upgrades = {
   2: { cost: 50, increase: 5 }
 };
 
-// trocar telas
-function showScreen(name){
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+window.showScreen = (name)=>{
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(name).classList.add("active");
+};
+
+function updateUI(){
+  document.getElementById("points").innerText = Math.floor(points);
+  document.getElementById("perClick").innerText = perClick;
+  document.getElementById("auto").innerText = autoClick;
+  document.getElementById("rebirths").innerText = rebirths;
+  document.getElementById("mult").innerText = multiplier.toFixed(1);
+
+  document.getElementById("cost1").innerText = upgrades[1].cost;
+  document.getElementById("cost2").innerText = upgrades[2].cost;
+  document.getElementById("autoCost").innerText = autoCost;
+  document.getElementById("rebirthCost").innerText = rebirthCost;
 }
 
-// salvar
+// LOAD
+points = parseInt(localStorage.getItem("points"))||0;
+perClick = parseInt(localStorage.getItem("perClick"))||1;
+autoClick = parseInt(localStorage.getItem("autoClick"))||0;
+autoCost = parseInt(localStorage.getItem("autoCost"))||75;
+
+rebirths = parseInt(localStorage.getItem("rebirths"))||0;
+multiplier = parseFloat(localStorage.getItem("multiplier"))||1;
+rebirthCost = parseInt(localStorage.getItem("rebirthCost"))||10000;
+
+upgrades[1].cost = parseInt(localStorage.getItem("cost1"))||10;
+upgrades[2].cost = parseInt(localStorage.getItem("cost2"))||50;
+
+// SAVE
 setInterval(()=>{
   localStorage.setItem("points", points);
   localStorage.setItem("perClick", perClick);
@@ -150,108 +179,64 @@ setInterval(()=>{
   localStorage.setItem("rebirths", rebirths);
   localStorage.setItem("multiplier", multiplier);
   localStorage.setItem("rebirthCost", rebirthCost);
-
   localStorage.setItem("cost1", upgrades[1].cost);
   localStorage.setItem("cost2", upgrades[2].cost);
 },1000);
 
-// carregar
-window.onload = ()=>{
-  points = parseInt(localStorage.getItem("points"))||0;
-  perClick = parseInt(localStorage.getItem("perClick"))||1;
-  autoClick = parseInt(localStorage.getItem("autoClick"))||0;
-  autoCost = parseInt(localStorage.getItem("autoCost"))||75;
-
-  rebirths = parseInt(localStorage.getItem("rebirths"))||0;
-  multiplier = parseFloat(localStorage.getItem("multiplier"))||1;
-  rebirthCost = parseInt(localStorage.getItem("rebirthCost"))||10000;
-
-  upgrades[1].cost = parseInt(localStorage.getItem("cost1"))||10;
-  upgrades[2].cost = parseInt(localStorage.getItem("cost2"))||50;
-
-  updateUI();
-};
-
-// clique
-document.getElementById("clickBtn").onclick = (e)=>{
+// CLICK
+document.getElementById("clickBtn").onclick = ()=>{
   points += perClick * multiplier;
-
-  let rect = e.target.getBoundingClientRect();
-  createParticle(rect.left+50, rect.top);
-
   updateUI();
 };
 
-// auto (nerfado)
+// AUTO
 setInterval(()=>{
   points += autoClick * (multiplier * 0.2);
   updateUI();
 },1000);
 
-// atualizações
-função comprarAtualizar(id){
-  dêixar u = atualizações[id];
-  se(pontos >= u.custo){
-    pontos -= u.custo;
-    por camarilha += u.aumentar;
-    u.custo = Matemática.chão(u.custo * 1,5);
+// FUNÇÕES
+window.buyUpgrade = (id)=>{
+  let u = upgrades[id];
+  if(points >= u.cost){
+    points -= u.cost;
+    perClick += u.increase;
+    u.cost = Math.floor(u.cost * 1.5);
+    updateUI();
   }
-}
+};
 
-// automático
-diversidade comprarAuto(){
-  se(pontos >= custo automático){
-    pontos -= custo automático;
-    camarilha automático++;
-    custo automático = Matemática.chão(custo automático * 1.2);
+window.buyAuto = ()=>{
+  if(points >= autoCost){
+    points -= autoCost;
+    autoClick++;
+    autoCost = Math.floor(autoCost * 1.2);
+    updateUI();
   }
-}
+};
 
-// renascimento
-diversidade renascimento(){
-  se(pontos >= custo de renascimento){
-    renascimentos++;
-    multiplicador += 0,3;
+window.rebirth = ()=>{
+  if(points >= rebirthCost){
+    rebirths++;
+    multiplier += 0.3;
 
-    pontos = 0;
-    por camarilha = 1;
-    camarilha automático = 0;
-    custo automático = 75;
+    points = 0;
+    perClick = 1;
+    autoClick = 0;
+    autoCost = 75;
 
-    atualizações[1].custo = 10;
-    atualizações[2].custo = 50;
+    upgrades[1].cost = 10;
+    upgrades[2].cost = 50;
 
-    custo de renascimento *= 2;
+    rebirthCost *= 2;
+    updateUI();
   }
-}
+};
 
-// particípios
-diversidade criarPartícula(x,y){
-  dêixar p = documento.criarElemento("div");
-  p.nome sim classe="partícula";
-  p.texto interno="+";
+updateUI();
 
-  p.estilo.escarada=x+"px";
-  p.estilo.topo=y+"px";
+});
+</script>
 
-  documento.corpo.anexarCriança(p);
-  definirTempo limite(()=>p.removedor(),1000);
-}
-
-// Interface do usuário
-diversidade atualizaçãoUI(){
-  documento.obterElementoPorId("pontos").texto interno = Matemática.chão(pontos);
-  documento.obterElementoPorId("perClick").texto interno = por camarilha;
-  documento.obterElementoPorId("automático").texto interno = camarilha automático;
-  documento.obterElementoPorId("renascimentos").texto interno = renascimentos;
-  documento.obterElementoPorId("múltiplo").texto interno = multiplicador.paraFixo(1);
-
-  documento.obterElementoPorId("custo1").texto interno = atualizações[1].custo;
-  documento.obterElementoPorId("custo2").texto interno = atualizações[2].custo;
-  documento.obterElementoPorId("custo automático").texto interno = custo automático;
-  documento.obterElementoPorId("custo de renascimento").texto interno = custo de renascimento;
-}
-</roteiro>
-
-</corpo>
-  </HTML>
+</body>
+</html>
