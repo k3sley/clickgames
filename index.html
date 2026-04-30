@@ -12,7 +12,7 @@ body {
   overflow: hidden;
 }
 
-/* 🌊 FUNDO ANIMADO */
+/* FUNDO */
 body::before {
   content: "";
   position: fixed;
@@ -29,11 +29,17 @@ body::before {
   100% { transform: translate(0,0); }
 }
 
+/* TOPO */
+#top {
+  text-align: center;
+  padding: 10px;
+  background: rgba(0,0,0,0.5);
+}
+
 /* MENU */
 #menu {
   display: flex;
   justify-content: center;
-  background: rgba(0,0,0,0.5);
   padding: 10px;
 }
 
@@ -61,64 +67,65 @@ body::before {
   background: #00ff99;
   padding: 25px;
   font-size: 20px;
-  border-radius: 10px; /* quadrado */
+  border-radius: 10px;
+  position: relative;
 }
 
 /* LOJA */
 .upgrade {
   display: block;
   margin: 10px auto;
-  padding: 10px;
-  background: #333;
+  padding: 12px;
+  background: #444;
+  color: white;
   border-radius: 6px;
   cursor: pointer;
 }
 
-/* REBIRTH */
-.rebirthBtn {
-  background: #2196f3;
+/* CURSORES */
+.cursor {
+  position: absolute;
+  font-size: 20px;
+  animation: clickAnim 0.5s infinite alternate;
+}
+
+@keyframes clickAnim {
+  from { transform: translateY(0); }
+  to { transform: translateY(5px); }
 }
 </style>
 </head>
 
 <body>
 
+<div id="top">
+  💰 Pontos: <span id="points">0</span>
+</div>
+
 <div id="menu">
-  <div class="menuBtn" onclick="showScreen('game')">🎮 Jogo</div>
-  <div class="menuBtn" onclick="showScreen('shop')">🛒 Loja</div>
-  <div class="menuBtn" onclick="showScreen('rebirth')">🔁 Rebirth</div>
+  <div class="menuBtn" onclick="showScreen('game')">🎮</div>
+  <div class="menuBtn" onclick="showScreen('shop')">🛒</div>
 </div>
 
 <div id="game" class="screen active">
-  <h1>Pontos: <span id="points">0</span></h1>
   <button id="clickBtn">CLICAR</button>
   <h3>Por clique: <span id="perClick">1</span></h3>
-  <h3>Auto: <span id="auto">0</span>/s</h3>
+  <h3>Auto nível: <span id="auto">0</span></h3>
 </div>
 
 <div id="shop" class="screen">
   <h2>Loja</h2>
 
   <button class="upgrade" onclick="buyUpgrade(1)">
-    +1 clique (Custo: <span id="cost1">10</span>)
+    +1 clique (100)
   </button>
 
   <button class="upgrade" onclick="buyUpgrade(2)">
-    +5 clique (Custo: <span id="cost2">50</span>)
+    +5 clique (500)
   </button>
 
   <button class="upgrade" onclick="buyAuto()">
-    Auto (+1/s) (Custo: <span id="autoCost">75</span>)
-  </button>
-</div>
-
-<div id="rebirth" class="screen">
-  <h2>Rebirth</h2>
-  <p>Rebirths: <span id="rebirths">0</span></p>
-  <p>Multiplicador: x<span id="mult">1</span></p>
-
-  <button class="upgrade rebirthBtn" onclick="rebirth()">
-    Rebirth (Custo: <span id="rebirthCost">10000</span>)
+    Auto click (1000)
   </button>
 </div>
 
@@ -127,108 +134,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
 let points = 0;
 let perClick = 1;
-let autoClick = 0;
-let autoCost = 75;
-
-let rebirths = 0;
-let multiplier = 1;
-let rebirthCost = 10000;
+let autoLevel = 0;
 
 let upgrades = {
-  1: { cost: 10, increase: 1 },
-  2: { cost: 50, increase: 5 }
+  1: { cost: 100, increase: 1 },
+  2: { cost: 500, increase: 5 }
 };
 
+const clickBtn = document.getElementById("clickBtn");
+
+// telas
 window.showScreen = (name)=>{
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(name).classList.add("active");
 };
 
+// UI
 function updateUI(){
   document.getElementById("points").innerText = Math.floor(points);
   document.getElementById("perClick").innerText = perClick;
-  document.getElementById("auto").innerText = autoClick;
-  document.getElementById("rebirths").innerText = rebirths;
-  document.getElementById("mult").innerText = multiplier.toFixed(1);
-
-  document.getElementById("cost1").innerText = upgrades[1].cost;
-  document.getElementById("cost2").innerText = upgrades[2].cost;
-  document.getElementById("autoCost").innerText = autoCost;
-  document.getElementById("rebirthCost").innerText = rebirthCost;
+  document.getElementById("auto").innerText = autoLevel;
 }
-
-// LOAD
-points = parseInt(localStorage.getItem("points"))||0;
-perClick = parseInt(localStorage.getItem("perClick"))||1;
-autoClick = parseInt(localStorage.getItem("autoClick"))||0;
-autoCost = parseInt(localStorage.getItem("autoCost"))||75;
-
-rebirths = parseInt(localStorage.getItem("rebirths"))||0;
-multiplier = parseFloat(localStorage.getItem("multiplier"))||1;
-rebirthCost = parseInt(localStorage.getItem("rebirthCost"))||10000;
-
-upgrades[1].cost = parseInt(localStorage.getItem("cost1"))||10;
-upgrades[2].cost = parseInt(localStorage.getItem("cost2"))||50;
 
 // SAVE
 setInterval(()=>{
   localStorage.setItem("points", points);
   localStorage.setItem("perClick", perClick);
-  localStorage.setItem("autoClick", autoClick);
-  localStorage.setItem("autoCost", autoCost);
-  localStorage.setItem("rebirths", rebirths);
-  localStorage.setItem("multiplier", multiplier);
-  localStorage.setItem("rebirthCost", rebirthCost);
-  localStorage.setItem("cost1", upgrades[1].cost);
-  localStorage.setItem("cost2", upgrades[2].cost);
+  localStorage.setItem("autoLevel", autoLevel);
 },1000);
 
+// LOAD
+points = parseInt(localStorage.getItem("points"))||0;
+perClick = parseInt(localStorage.getItem("perClick"))||1;
+autoLevel = parseInt(localStorage.getItem("autoLevel"))||0;
+
 // CLICK
-document.getElementById("clickBtn").onclick = ()=>{
-  points += perClick * multiplier;
+clickBtn.onclick = ()=>{
+  points += perClick;
   updateUI();
 };
 
-// AUTO
+// AUTO (agora é multiplicador visual)
 setInterval(()=>{
-  points += autoClick * (multiplier * 0.2);
-  updateUI();
+  if(autoLevel > 0){
+    points += perClick * autoLevel * 0.3;
+    updateUI();
+  }
 },1000);
 
-// FUNÇÕES
+// UPGRADE
 window.buyUpgrade = (id)=>{
   let u = upgrades[id];
   if(points >= u.cost){
     points -= u.cost;
     perClick += u.increase;
-    u.cost = Math.floor(u.cost * 1.5);
     updateUI();
   }
 };
 
+// AUTO
 window.buyAuto = ()=>{
-  if(points >= autoCost){
-    points -= autoCost;
-    autoClick++;
-    autoCost = Math.floor(autoCost * 1.2);
-    updateUI();
-  }
-};
+  if(points >= 1000){
+    points -= 1000;
+    autoLevel++;
 
-window.rebirth = ()=>{
-  if(points >= rebirthCost){
-    rebirths++;
-    multiplier += 0.3;
+    // cria cursor visual
+    let c = document.createElement("div");
+    c.className = "cursor";
+    c.innerText = "🖱️";
 
-    points = 0;
-    perClick = 1;
-    autoClick = 0;
-    autoCost = 75;
+    c.style.left = Math.random()*200 + "px";
+    c.style.top = Math.random()*100 + "px";
 
-    upgrades[1].cost = 10;
-    upgrades[2].cost = 50;
+    clickBtn.appendChild(c);
 
-    rebirthCost *= 2;
     updateUI();
   }
 };
